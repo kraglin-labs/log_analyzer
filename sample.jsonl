@@ -1,0 +1,8 @@
+
+{"timestamp":"2026-10-15T10:00:00Z","level":"INFO","message":"Server started"}
+{"timestamp":"2026-10-15T10:00:01Z","level":"WARN","message":"Slow database query"}
+{"timestamp":"2026-10-15T10:00:02Z","level":"ERROR","message":"Connection refused"}
+{"timestamp":"2026-10-15T10:00:03Z","level":"ERROR","message":"Connection refused :|"}
+{"timestamp":"2026-10-15T10:00:04Z","severity":"FATAL","msg":"Disk failure :()"}
+{"timestamp":"2026-10-15T10:00:05Z","level":"INFO","message":"Passed Health Check"}
+
