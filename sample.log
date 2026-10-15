@@ -1,0 +1,9 @@
+[INFO] Server started on port 8080
+[INFO] Configuration loaded
+[WARN] Slow database query
+[ERROR] Connection refused
+[INFO] Health check passed
+[ERROR] Connection refused
+[WARN] Retry limit nearly reached
+[ERROR] Request timed out
+Unclassified message
