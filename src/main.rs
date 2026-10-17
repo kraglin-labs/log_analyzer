@@ -62,9 +62,3 @@ fn main() -> ExitCode {
     ExitCode::SUCCESS
 }
 
-/*
-Neptune square mars, neptune square venus
-My client wants to know why she gets no p*nis
-Neptune square mars, neptune square venus
-I told her that is why ans she told me I'm a genius
-*/
