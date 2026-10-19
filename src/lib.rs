@@ -50,7 +50,7 @@ pub fn analyze_reader<R: BufRead>(reader: R) -> io::Result<LogStats> {
         let entry = if trimmed.starts_with('{') {
             match parse_json_entry(trimmed) {
                 Ok(entry) => entry,
-                Err(()) => {
+                Err(_) => {
                     stats.malformed_json += 1;
                     stats.other += 1;
                     continue;
@@ -80,10 +80,15 @@ pub fn analyze_reader<R: BufRead>(reader: R) -> io::Result<LogStats> {
     Ok(stats)
 }
 
-fn parse_json_entry(line: &str) -> Result<LogEntry, ()> {
-    let value: Value = serde_json::from_str(line).map_err(|_| ())?;
+#[derive(Debug)]
+enum ParseError {
+    NotJson,
+    NotObject,
+}
 
-    let object = value.as_object().ok_or(())?;
+fn parse_json_entry(line: &str) -> Result<LogEntry, ParseError> {
+    let value: Value = serde_json::from_str(line).map_err(|_| ParseError::NotJson)?;
+    let object = value.as_object().ok_or(ParseError::NotObject)?;
 
     let level = object
         .get("level")
@@ -149,5 +154,33 @@ fn parse_level(value: &str) -> Level {
         "ERROR" => Level::Error,
         "FATAL" => Level::Fatal,
         _ => Level::Other,
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn parses_bracketed_levels() {
+        let entry = parse_text_entry("[ERROR] Database unavailable");
+        assert_eq!(entry.level, Level::Error);
+        assert_eq!(entry.message, "Database unavailable");
+    }
+	fn parses_level_with_colon() {
+        let entry = parse_text_entry("WARN: Low memory");
+        assert_eq!(entry.level, Level::Warn);
+        assert_eq!(entry.message, "Low memory");
+    }
+    #[test]
+    fn unknown_bracket_is_other() {
+        let entry = parse_text_entry("[PERF] cache hit");
+        assert_eq!(entry.level, Level::Other);
+    }
+    #[test]
+    fn parselevel_is_case_insensitive() {
+        assert_eq!(parse_level("error"), Level::Error);
+        assert_eq!(parse_level("Warning"), Level::Warn);
     }
 }
