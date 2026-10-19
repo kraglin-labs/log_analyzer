@@ -1,71 +1,35 @@
 # Rust Log Analyzer
 
-A lightweight command-line log analyzer written in Rust. It processes log files incrementally, summarizes common log levels, and identifies repeated error messages.
+A lightweight command-line log analyzer written in Rust. It processes log files
+incrementally, summarizes log levels, and identifies repeated error messages.
+Supports both plain-text logs (e.g. `[INFO] ...`, `ERROR: ...`) and structured
+JSON/JSONL logs.
 
 ## Features
 
-- Stream log files line by line
-- Count INFO, WARN, ERROR, and unclassified lines
-- Identify frequently repeated error messages
-- Handle file and I/O errors
-- Unit and integration tests
-- No third-party dependencies
+- Stream log files line by line with buffered I/O
+- Parse plain-text logs with level prefixes (`[ERROR]`, `INFO:`, `WARN ...`)
+- Parse JSON/JSONL logs, accepting `level`/`severity` and `message`/`msg` fields
+- Count TRACE, DEBUG, INFO, WARN, ERROR, FATAL, malformed JSON, and other lines
+- Identify the most frequently repeated error messages
+- Library/CLI split: the analysis core is a testable library, `main.rs` is a thin CLI
+- Unit + integration tests, run on every push via GitHub Actions CI
 
-## Requirements
+## Dependencies
 
-- Rust stable toolchain
-- Cargo
-
-## Installation
-
-Clone the repository and enter the project directory:
-
-```bash
-git clone https://github.com/kraglin-labs/log_analyzer.git
-cd log_analyzer
-```
-
-Build the project:
-
-```bash
-cargo build --release
-```
+- `serde_json` for JSON log parsing
 
 ## Usage
 
-Analyze a log file:
-
 ```bash
+# build
+cargo build --release
+
+# analyze a plain-text log
 cargo run -- sample.log
-```
 
-Run the tests:
+# analyze a JSONL log
+cargo run -- sample.jsonl
 
-```bash
+# run the tests
 cargo test
-```
-
-## Example
-
-Given a log containing INFO, WARN, and ERROR entries, the analyzer prints a summary of the counts and the most frequent error messages.
-
-## Design
-
-The analysis engine uses Rust's standard library and buffered I/O to process input incrementally. The library and CLI are separated to make the core functionality independently testable.
-
-## Current limitations
-
-- Supports simple text logs with recognizable level tokens
-- Does not yet parse structured JSON logs
-- Does not yet support command-line filtering options
-
-## Roadmap
-
-- [ ] Level and keyword filtering
-- [ ] Configurable number of top errors
-- [ ] JSON output
-- [ ] Benchmarks and performance documentation
-
-## License
-
-MIT
