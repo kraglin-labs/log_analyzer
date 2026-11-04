@@ -28,19 +28,30 @@ enum Level {
 }
 
 #[derive(Debug)]
-struct LogEntry {
+struct LogEntry<'a> {
+    level: Level,
+    message: &'a str,
+}
+
+#[derive(Debug)]
+struct OwnedLogEntry {
     level: Level,
     message: String,
 }
 
 pub fn analyze_reader<R: BufRead>(reader: R) -> io::Result<LogStats> {
     let mut stats = LogStats::default();
+    let mut line_buf = String::new();
 
-    for line_result in reader.lines() {
-        let line = line_result?;
+    loop {
+        line_buf.clear();
+        let bytes_read = reader.read_line(&mut line_buf)?;
+        if bytes_read == 0 {
+            break;
+        }
+
         stats.total_lines += 1;
-
-        let trimmed = line.trim();
+        let trimmed = line_buf.trim();
 
         if trimmed.is_empty() {
             stats.other += 1;
@@ -86,7 +97,7 @@ enum ParseError {
     NotObject,
 }
 
-fn parse_json_entry(line: &str) -> Result<LogEntry, ParseError> {
+fn parse_json_entry(line: &str) -> Result<OwnedLogEntry, ParseError> {
     let value: Value = serde_json::from_str(line).map_err(|_| ParseError::NotJson)?;
     let object = value.as_object().ok_or(ParseError::NotObject)?;
 
@@ -97,17 +108,16 @@ fn parse_json_entry(line: &str) -> Result<LogEntry, ParseError> {
         .map(parse_level)
         .unwrap_or(Level::Other);
 
-    let message = object
-        .get("message")
-        .or_else(|| object.get("msg"))
-        .and_then(Value::as_str)
-        .unwrap_or(line)
-        .to_owned();
+    let message = match object.get("message").or_else(|| object.get("msg")) {
+        Some(Value::String(s)) => s.clone(),
+        Some(other) => other.to_string(),
+        None => line.to_owned(),
+    };
 
-    Ok(LogEntry { level, message })
+    Ok(OwnedLogEntry { level, message })
 }
 
-fn parse_text_entry(line: &str) -> LogEntry {
+fn parse_text_entry(line: &str) -> OwnedLogEntry {
     let (level, message) = if line.starts_with('[') {
         match line.find(']') {
             Some(end) => {
@@ -132,7 +142,7 @@ fn parse_text_entry(line: &str) -> LogEntry {
         }
     };
 
-    LogEntry {
+    OwnedLogEntry {
         level,
         message: message.to_owned(),
     }
@@ -157,27 +167,30 @@ fn parse_level(value: &str) -> Level {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-	use super::*;
+    use super::*;
 
-	#[test]
-	fn parses_bracketed_levels() {
+    #[test]
+    fn parses_bracketed_levels() {
         let entry = parse_text_entry("[ERROR] Database unavailable");
         assert_eq!(entry.level, Level::Error);
         assert_eq!(entry.message, "Database unavailable");
     }
-	fn parses_level_with_colon() {
+
+    #[test] 
+    fn parses_level_with_colon() {
         let entry = parse_text_entry("WARN: Low memory");
         assert_eq!(entry.level, Level::Warn);
         assert_eq!(entry.message, "Low memory");
     }
+
     #[test]
     fn unknown_bracket_is_other() {
         let entry = parse_text_entry("[PERF] cache hit");
         assert_eq!(entry.level, Level::Other);
     }
+
     #[test]
     fn parselevel_is_case_insensitive() {
         assert_eq!(parse_level("error"), Level::Error);
