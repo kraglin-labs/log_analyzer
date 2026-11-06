@@ -2,6 +2,11 @@
 name = "log_analyzer"
 version = "0.1.0"
 edition = "2024"
+description = "FAST API tool for analyzing the log messages"
+author = "Kraglin Sakis"
+license = "MIT"
+repository = "https://github.com/kraglin-labs/log-analyzer"
+
 
 [dependencies]
 serde_json = "1"
