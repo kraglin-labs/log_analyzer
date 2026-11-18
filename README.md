@@ -1,6 +1,6 @@
 # Rust Log Analyzer
 
-A lightweight command-line log analyzer written in Rust. It processes log files
+This is lightweight command-line log analyzer written in Rust. It processes log files
 incrementally, summarizes log levels, and identifies repeated error messages.
 Supports both plain-text logs (e.g. `[INFO] ...`, `ERROR: ...`) and structured
 JSON/JSONL logs.
