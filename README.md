@@ -7,7 +7,7 @@ JSON/JSONL logs.
 
 ## Features
 
-- Stream log files line by line with buffered I/O
+- It streams log files line by line with buffered I/O
 - Parse plain-text logs with level prefixes (`[ERROR]`, `INFO:`, `WARN ...`)
 - Parse JSON/JSONL logs, accepting `level`/`severity` and `message`/`msg` fields
 - Count TRACE, DEBUG, INFO, WARN, ERROR, FATAL, malformed JSON, and other lines
