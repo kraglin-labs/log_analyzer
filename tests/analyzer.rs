@@ -1,3 +1,5 @@
+// the tests 
+
 use log_analyzer::analyze_reader;
 use std::io::Cursor;
 
